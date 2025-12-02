@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Income Statement Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #0f172a;
+            --accent-color: #dc2626;
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --success-color: #16a34a;
+            --text-color: #1e293b;
+            --text-light: #64748b;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f1f5f9;
+            padding: 15px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            padding: 22px;
+            margin-bottom: 22px;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-title {
+            font-size: 1.35rem;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+            color: var(--secondary-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-title::before {
+            content: "";
+            display: block;
+            width: 5px;
+            height: 24px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+            gap: 15px;
+        }
+        
+        .form-group {
+            flex: 1 0 280px;
+            padding: 0 10px;
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--secondary-color);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        label.required::after {
+            content: "*";
+            color: var(--accent-color);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background: white;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+        
+        textarea {
+            min-height: 85px;
+            resize: vertical;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 11px 22px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        }
+        
+        .btn-danger {
+            background-color: var(--accent-color);
+        }
+        
+        .btn-danger:hover {
+            background-color: #b91c1c;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background-color: #15803d;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 850px;
+        }
+        
+        th, td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        th {
+            background-color: #f1f5f9;
+            color: var(--secondary-color);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        .action-cell {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            cursor: help;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 240px;
+            background-color: var(--secondary-color);
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 10px;
+            position: absolute;
+            z-index: 100;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 0.85rem;
+            font-weight: normal;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            font-family: system-ui;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .statement-container {
+            margin-top: 30px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        
+        .statement-container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .statement-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 22px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .statement-header h2 {
+            font-size: 1.7rem;
+            margin-bottom: 12px;
+            color: var(--secondary-color);
+        }
+        
+        .statement-header p {
+            font-size: 1.05rem;
+            margin: 6px 0;
+            color: var(--text-light);
+        }
+        
+        .income-statement {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            font-size: 0.95rem;
+        }
+        
+        .income-statement th, 
+        .income-statement td {
+            padding: 12px 16px;
+            text-align: right;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .income-statement th {
+            background-color: #f1f5f9;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .section-header {
+            background-color: #e2e8f0;
+            font-weight: 700;
+            font-size: 1.05rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .total-row {
+            font-weight: 700;
+            font-size: 1.1rem;
+            background-color: #dbeafe;
+            border-top: 2px solid var(--primary-color);
+        }
+        
+        .highlight {
+            background-color: #eff6ff;
+            font-weight: 700;
+        }
+        
+        .negative {
+            color: var(--accent-color);
+        }
+        
+        .footer {
+            background: linear-gradient(135deg, var(--secondary-color), #0c1427);
+            color: white;
+            text-align: center;
+            padding: 22px;
+            border-radius: 12px;
+            margin-top: 35px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .footer p {
+            margin: 6px 0;
+            font-size: 0.95rem;
+        }
+        
+        .footer .small {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 992px) {
+            .form-group {
+                flex: 1 0 100%;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .income-statement th, 
+            .income-statement td {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+            
+            header h1 {
+                font-size: 1.6rem;
+            }
+        }
+        
+        .error {
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .success-message, .error-message {
+            padding: 14px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+        }
+        
+        .success-message {
+            background-color: #dcfce7;
+            color: #166534;
+            display: none;
+        }
+        
+        .error-message {
+            background-color: #fee2e2;
+            color: #991b1b;
+            display: none;
+        }
+        
+        .notification-icon {
+            font-size: 1.2rem;
+        }
+        
+        .asset-section {
+            margin-top: 15px;
+        }
+        
+        .asset-table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .asset-table-header h3 {
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+        }
+        
+        .form-section {
+            margin-bottom: 25px;
+        }
+        
+        .section-description {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            padding-left: 10px;
+        }
+        
+        /* Input focus styles for better UX */
+        input:valid, select:valid, textarea:valid {
+            border-color: #cbd5e1;
+        }
+        
+        input:focus:valid, select:focus:valid, textarea:focus:valid {
+            border-color: var(--primary-color);
+        }
+        
+        /* Ensure consistent spacing */
+        .card > .form-row:first-child {
+            margin-top: 10px;
+        }
+        
+        /* Animation for statement appearance */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .statement-container.visible {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+        
+        /* Better asset table styling */
+        .asset-table-container {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin: 15px 0;
+        }
+        
+        .remove-asset {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+        
+        /* Focus state for better accessibility */
+        input:focus, select:focus, textarea:focus, button:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Professional Income Statement Generator</h1>
+            <p>Create, calculate, and export financial statements with automatic depreciation calculations</p>
+        </header>
+        
+        <div class="success-message" id="successMessage">
+            <span class="notification-icon">✓</span>
+            <span>Calculation completed successfully! Scroll down to view your income statement.</span>
+        </div>
+        <div class="error-message" id="errorMessage">
+            <span class="notification-icon">!</span>
+            <span id="errorMessageText">Please fill in all required fields.</span>
+        </div>
+        
+        <!-- Company Information Section -->
+        <div class="card">
+            <h2 class="card-title">Company Information</h2>
+            <div class="section-description">Enter your company details to personalize the income statement.</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="companyName" class="required">Company Name</label>
+                    <input type="text" id="companyName" placeholder="Acme Corporation">
+                </div>
+                <div class="form-group">
+                    <label for="cinNumber" class="required">CIN / DIN Number</label>
+                    <input type="text" id="cinNumber" placeholder="U12345MH2020PLC123456">
+                </div>
+                <div class="form-group">
+                    <label for="financialYear" class="required">Financial Year</label>
+                    <input type="text" id="financialYear" placeholder="2024–2025">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="headOffice" class="required">Head Office Address</label>
+                    <textarea id="headOffice" placeholder="123 Business Ave, Financial District"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="city" class="required">City</label>
+                    <input type="text" id="city" placeholder="Mumbai">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="state" class="required">State / Province</label>
+                    <input type="text" id="state" placeholder="Maharashtra">
+                </div>
+                <div class="form-group">
+                    <label for="country" class="required">Country</label>
+                    <input type="text" id="country" placeholder="India">
+                </div>
+                <div class="form-group">
+                    <label for="zipCode" class="required">PIN / ZIP Code</label>
+                    <input type="text" id="zipCode" placeholder="400001">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email" class="required">Email</label>
+                    <input type="email" id="email" placeholder="contact@acmecorp.com">
+                </div>
+                <div class="form-group">
+                    <label for="contactNumber" class="required">Contact Number</label>
+                    <input type="text" id="contactNumber" placeholder="+91 98765 43210">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Revenue Section -->
+        <div class="card">
+            <h2 class="card-title">Revenue</h2>
+            <div class="section-description">Enter your sales and revenue adjustments.</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="grossRevenue" class="required">Gross Revenue / Sales</label>
+                    <input type="number" id="grossRevenue" placeholder="0.00" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="salesReturns">Sales Returns</label>
+                    <input type="number" id="salesReturns" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="salesAllowances">Sales Allowances</label>
+                    <input type="number" id="salesAllowances" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="salesDiscounts">Sales Discounts</label>
+                    <input type="number" id="salesDiscounts" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+            </div>
+        </div>
+        
+        <!-- COGS Section -->
+        <div class="card">
+            <h2 class="card-title">Cost of Goods Sold (COGS)</h2>
+            <div class="section-description">Enter inventory and purchase information.</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="beginningInventory" class="required">Beginning Inventory</label>
+                    <input type="number" id="beginningInventory" placeholder="0.00" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="purchases" class="required">Purchases</label>
+                    <input type="number" id="purchases" placeholder="0.00" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="endingInventory" class="required">Ending Inventory</label>
+                    <input type="number" id="endingInventory" placeholder="0.00" min="0" step="0.01">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Operating Expenses - Selling -->
+        <div class="card">
+            <h2 class="card-title">Operating Expenses - Selling</h2>
+            <div class="section-description">Enter selling-related expenses. Depreciation will be auto-calculated.</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="advertising">Advertising</label>
+                    <input type="number" id="advertising" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="salesSalaries">Sales Salaries</label>
+                    <input type="number" id="salesSalaries" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="commissions">Commissions</label>
+                    <input type="number" id="commissions" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="freightOut">Freight-out</label>
+                    <input type="number" id="freightOut" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="depSalesAssets">Depreciation (Sales Assets) 
+                    <span class="tooltip">?
+                        <span class="tooltiptext">Automatically calculated from asset register</span>
+                    </span>
+                </label>
+                <input type="number" id="depSalesAssets" placeholder="0.00" min="0" step="0.01" readonly>
+            </div>
+        </div>
+        
+        <!-- Operating Expenses - G&A -->
+        <div class="card">
+            <h2 class="card-title">Operating Expenses - General & Administrative</h2>
+            <div class="section-description">Enter administrative expenses. Depreciation will be auto-calculated.</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="officeSalaries">Office Salaries</label>
+                    <input type="number" id="officeSalaries" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="rent">Rent</label>
+                    <input type="number" id="rent" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="utilities">Utilities</label>
+                    <input type="number" id="utilities" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="insurance">Insurance</label>
+                    <input type="number" id="insurance" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="depAdminAssets">Depreciation (Administrative Assets) 
+                    <span class="tooltip">?
+                        <span class="tooltiptext">Automatically calculated from asset register</span>
+                    </span>
+                </label>
+                <input type="number" id="depAdminAssets" placeholder="0.00" min="0" step="0.01" readonly>
+            </div>
+        </div>
+        
+        <!-- Non-Operating Items -->
+        <div class="card">
+            <h2 class="card-title">Non-Operating Items</h2>
+            <div class="section-description">Enter non-operating income and expenses.</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="interestIncome">Interest Income</label>
+                    <input type="number" id="interestIncome" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="dividendIncome">Dividend Income</label>
+                    <input type="number" id="dividendIncome" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="gainOnSale">Gain on Sale of Assets</label>
+                    <input type="number" id="gainOnSale" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="interestExpense">Interest Expense</label>
+                    <input type="number" id="interestExpense" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="lossOnSale">Loss on Sale of Assets</label>
+                    <input type="number" id="lossOnSale" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="impairmentCharges">Impairment Charges</label>
+                    <input type="number" id="impairmentCharges" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="restructuringCosts">Restructuring Costs</label>
+                    <input type="number" id="restructuringCosts" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="taxRate" class="required">Taxable / Applicable Tax Rate (%)</label>
+                    <input type="number" id="taxRate" placeholder="0.00" min="0" max="100" step="0.01" value="30">
+                </div>
+            </div>
+        </div>
+        
+        <!-- EPS Section -->
+        <div class="card">
+            <h2 class="card-title">Earnings Per Share (EPS)</h2>
+            <div class="section-description">Enter share information for EPS calculation.</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="preferredDividends">Preferred Dividends</label>
+                    <input type="number" id="preferredDividends" placeholder="0.00" min="0" step="0.01" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="weightedShares" class="required">Weighted Average Shares</label>
+                    <input type="number" id="weightedShares" placeholder="0" min="1" step="1" value="1000000">
+                </div>
+                <div class="form-group">
+                    <label for="dilutedShares">Diluted Shares</label>
+                    <input type="number" id="dilutedShares" placeholder="0" min="0" step="1" value="0">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Asset Register Section -->
+        <div class="card">
+            <h2 class="card-title">Asset Register & Depreciation</h2>
+            <div class="section-description">Enter assets to automatically calculate depreciation expenses. Minimum 1 asset required.</div>
+            
+            <div class="asset-table-container">
+                <table id="assetTable">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Asset Name / Description</th>
+                            <th>Purchase Date</th>
+                            <th>Cost</th>
+                            <th>Salvage Value</th>
+                            <th>Useful Life (Years)</th>
+                            <th>Depreciation Method</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assetTableBody">
+                        <!-- Rows will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="btn-group" style="margin-top: 15px;">
+                <button id="addAssetBtn" class="btn">+ Add Asset</button>
+                <button id="downloadCSVBtn" class="btn">Download Asset Register (CSV)</button>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="card">
+            <div class="btn-group">
+                <button id="calculateBtn" class="btn btn-success">Calculate Income Statement</button>
+                <button id="resetBtn" class="btn btn-danger">Reset All Data</button>
+                <button id="pdfBtn" class="btn">Download as PDF</button>
+            </div>
+        </div>
+        
+        <!-- Income Statement Output -->
+        <div class="statement-container" id="statementContainer">
+            <div class="statement-header">
+                <h2 id="statementTitle">Income Statement</h2>
+                <p id="companyHeader"></p>
+                <p id="cinHeader"></p>
+                <p id="financialYearHeader"></p>
+                <p id="contactHeader"></p>
+                <p id="generationDate"></p>
+            </div>
+            
+            <table class="income-statement" id="incomeStatement">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="statementBody">
+                    <!-- Statement will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>Copyright reserved. Created by Samar Jeet Jamwal. All information is private and secure — generated on the client side.</p>
+            <p class="small">Page 1 of 1 | Generated on: <span id="footerTimestamp"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const assetTableBody = document.getElementById('assetTableBody');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const pdfBtn = document.getElementById('pdfBtn');
+        const addAssetBtn = document.getElementById('addAssetBtn');
+        const downloadCSVBtn = document.getElementById('downloadCSVBtn');
+        const statementContainer = document.getElementById('statementContainer');
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorMessageText = document.getElementById('errorMessageText');
+        
+        // Initialize asset table with 10 default rows
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add default assets
+            addDefaultAssets();
+            
+            // Set current date for generation timestamp
+            updateGenerationTimestamp();
+            
+            // Event listeners
+            calculateBtn.addEventListener('click', calculateIncomeStatement);
+            resetBtn.addEventListener('click', resetForm);
+            pdfBtn.addEventListener('click', downloadPDF);
+            addAssetBtn.addEventListener('click', () => addAssetRow());
+            downloadCSVBtn.addEventListener('click', downloadAssetCSV);
+            
+            // Set up remove asset buttons (using event delegation)
+            assetTableBody.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-asset')) {
+                    const row = e.target.closest('tr');
+                    if (document.querySelectorAll('#assetTableBody tr').length > 1) {
+                        row.remove();
+                    } else {
+                        showError("At least one asset is required");
+                    }
+                }
+            });
+        });
+        
+        // Add default assets
+        function addDefaultAssets() {
+            const today = new Date();
+            const defaultAssets = [
+                { category: 'Administrative', name: 'Office Building', date: '2024-01-15', cost: 500000, salvage: 50000, life: 20, method: 'Straight-Line' },
+                { category: 'Selling', name: 'Delivery Truck 1', date: '2024-03-10', cost: 35000, salvage: 5000, life: 5, method: 'Straight-Line' },
+                { category: 'Administrative', name: 'Office Computers', date: '2024-02-20', cost: 15000, salvage: 1000, life: 3, method: 'Straight-Line' },
+                { category: 'Selling', name: 'Delivery Truck 2', date: '2024-04-05', cost: 32000, salvage: 4500, life: 5, method: 'DDB' },
+                { category: 'Administrative', name: 'Office Furniture', date: '2024-01-30', cost: 8000, salvage: 500, life: 7, method: 'Straight-Line' },
+                { category: 'Other', name: 'Manufacturing Equipment', date: '2024-02-15', cost: 120000, salvage: 15000, life: 10, method: 'SYD' },
+                { category: 'Administrative', name: 'Server Infrastructure', date: '2024-03-22', cost: 25000, salvage: 2000, life: 5, method: 'DDB' },
+                { category: 'Selling', name: 'Sales Office Renovation', date: '2024-01-10', cost: 45000, salvage: 0, life: 15, method: 'Straight-Line' },
+                { category: 'Administrative', name: 'Security System', date: '2024-04-18', cost: 7500, salvage: 500, life: 8, method: 'Straight-Line' },
+                { category: 'Other', name: 'Warehouse Shelving', date: '2024-02-05', cost: 18000, salvage: 1000, life: 10, method: 'Straight-Line' }
+            ];
+            
+            defaultAssets.forEach(asset => {
+                addAssetRow(
+                    asset.category, 
+                    asset.name, 
+                    asset.date, 
+                    asset.cost, 
+                    asset.salvage, 
+                    asset.life, 
+                    asset.method
+                );
+            });
+        }
+        
+        // Add a new asset row
+        function addAssetRow(category = 'Administrative', name = '', date = new Date().toISOString().split('T')[0], cost = 0, salvage = 0, life = 5, method = 'Straight-Line') {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <select class="asset-category">
+                        <option value="Selling" ${category === 'Selling' ? 'selected' : ''}>Selling</option>
+                        <option value="Administrative" ${category === 'Administrative' ? 'selected' : ''}>Administrative</option>
+                        <option value="Other" ${category === 'Other' ? 'selected' : ''}>Other</option>
+                    </select>
+                </td>
+                <td><input type="text" class="asset-name" placeholder="Asset description" value="${name}"></td>
+                <td><input type="date" class="asset-date" value="${date}"></td>
+                <td><input type="number" class="asset-cost" placeholder="0.00" min="0" step="0.01" value="${cost}"></td>
+                <td><input type="number" class="asset-salvage" placeholder="0.00" min="0" step="0.01" value="${salvage}"></td>
+                <td><input type="number" class="asset-life" placeholder="0" min="1" step="0.1" value="${life}"></td>
+                <td>
+                    <select class="asset-method">
+                        <option value="Straight-Line" ${method === 'Straight-Line' ? 'selected' : ''}>Straight-Line</option>
+                        <option value="DDB" ${method === 'DDB' ? 'selected' : ''}>Double-Declining Balance</option>
+                        <option value="Units" ${method === 'Units' ? 'selected' : ''}>Units-of-Production</option>
+                        <option value="SYD" ${method === 'SYD' ? 'selected' : ''}>Sum-of-Years'-Digits</option>
+                    </select>
+                </td>
+                <td class="action-cell">
+                    <button class="btn btn-danger remove-asset">Remove</button>
+                </td>
+            `;
+            assetTableBody.appendChild(row);
+        }
+        
+        // Calculate depreciation for an asset
+        function calculateDepreciation(asset) {
+            const category = asset.category;
+            const cost = parseFloat(asset.cost) || 0;
+            const salvage = parseFloat(asset.salvage) || 0;
+            const life = parseFloat(asset.life) || 1;
+            const method = asset.method;
+            const purchaseDate = new Date(asset.date);
+            
+            // Validate inputs
+            if (cost <= 0 || life <= 0) return 0;
+            if (salvage > cost) {
+                showError("Salvage value cannot be greater than cost");
+                return 0;
+            }
+            
+            // Determine financial year from input
+            const financialYearInput = document.getElementById('financialYear').value;
+            let startYear, endYear;
+            
+            if (financialYearInput.includes('–')) {
+                const years = financialYearInput.split('–');
+                startYear = parseInt(years[0]);
+                endYear = parseInt(years[1]);
+            } else {
+                // Fallback to current year if not properly formatted
+                const now = new Date();
+                startYear = now.getFullYear();
+                endYear = startYear + 1;
+            }
+            
+            const financialYearStart = new Date(startYear, 3, 1); // April 1 (assuming April-March FY)
+            const financialYearEnd = new Date(endYear, 3, 1);   // April 1 next year
+            
+            // Check if asset was purchased before or during the financial year
+            if (purchaseDate > financialYearEnd) {
+                return 0; // Asset purchased after the financial year
+            }
+            
+            let depreciation;
+            const depreciableAmount = cost - salvage;
+            
+            switch(method) {
+                case 'Straight-Line':
+                    // Calculate months in financial year
+                    let monthsInFY;
+                    if (purchaseDate < financialYearStart) {
+                        monthsInFY = 12; // Full year
+                    } else {
+                        // Calculate partial year
+                        const purchaseMonth = purchaseDate.getMonth();
+                        const startMonth = financialYearStart.getMonth();
+                        monthsInFY = 12 - (purchaseMonth - startMonth);
+                        if (monthsInFY < 0) monthsInFY = 0;
+                    }
+                    depreciation = (depreciableAmount / life) * (monthsInFY / 12);
+                    break;
+                    
+                case 'DDB':
+                    // Double Declining Balance
+                    const rate = 2 / life;
+                    let bookValue = cost;
+                    
+                    // If purchased before financial year, we need to calculate accumulated depreciation
+                    // For simplicity, we'll assume we're calculating for the current year only
+                    if (purchaseDate < financialYearStart) {
+                        // Calculate how many full years have passed
+                        const fullYears = Math.floor((financialYearStart - purchaseDate) / (365.25 * 24 * 60 * 60 * 1000));
+                        for (let i = 0; i < fullYears; i++) {
+                            const annualDep = bookValue * rate;
+                            // Ensure we don't go below salvage value
+                            if (bookValue - annualDep < salvage) {
+                                bookValue = salvage;
+                                break;
+                            }
+                            bookValue -= annualDep;
+                        }
+                    }
+                    
+                    // Calculate depreciation for current financial year
+                    depreciation = bookValue * rate;
+                    // Prorate if purchased during the year
+                    if (purchaseDate >= financialYearStart) {
+                        const monthsInFY = 12 - (purchaseDate.getMonth() - financialYearStart.getMonth());
+                        if (monthsInFY > 0) {
+                            depreciation = depreciation * (monthsInFY / 12);
+                        } else {
+                            depreciation = 0;
+                        }
+                    }
+                    
+                    // Ensure we don't go below salvage
+                    if (bookValue - depreciation < salvage) {
+                        depreciation = bookValue - salvage;
+                    }
+                    break;
+                    
+                case 'Units':
+                    // For simplicity, we'll assume 1000 units per year
+                    // In a real app, this would come from user input
+                    const estimatedUnits = 1000;
+                    const unitsUsed = estimatedUnits / life;
+                    depreciation = depreciableAmount * (unitsUsed / estimatedUnits);
+                    break;
+                    
+                case 'SYD':
+                    // Sum of Years' Digits
+                    const sumOfYears = life * (life + 1) / 2;
+                    // Determine year in asset life
+                    let yearInLife;
+                    if (purchaseDate < financialYearStart) {
+                        const yearsPassed = Math.floor((financialYearStart - purchaseDate) / (365.25 * 24 * 60 * 60 * 1000));
+                        yearInLife = yearsPassed + 1;
+                    } else {
+                        yearInLife = 1;
+                        // Prorate if purchased during the year
+                        const monthsInFY = 12 - (purchaseDate.getMonth() - financialYearStart.getMonth());
+                        if (monthsInFY <= 0) return 0;
+                    }
+                    
+                    if (yearInLife <= life) {
+                        depreciation = depreciableAmount * ((life - yearInLife + 1) / sumOfYears);
+                        // Prorate if purchased during the year
+                        if (purchaseDate >= financialYearStart) {
+                            const monthsInFY = 12 - (purchaseDate.getMonth() - financialYearStart.getMonth());
+                            depreciation = depreciation * (monthsInFY / 12);
+                        }
+                    } else {
+                        depreciation = 0;
+                    }
+                    break;
+                    
+                default:
+                    depreciation = 0;
+            }
+            
+            return Math.max(0, Math.round(depreciation * 100) / 100);
+        }
+        
+        // Calculate total depreciation by category
+        function calculateDepreciationTotals() {
+            const assetRows = document.querySelectorAll('#assetTableBody tr');
+            let sellingDep = 0;
+            let adminDep = 0;
+            
+            assetRows.forEach(row => {
+                const category = row.querySelector('.asset-category').value;
+                const asset = {
+                    category: category,
+                    name: row.querySelector('.asset-name').value,
+                    date: row.querySelector('.asset-date').value,
+                    cost: row.querySelector('.asset-cost').value,
+                    salvage: row.querySelector('.asset-salvage').value,
+                    life: row.querySelector('.asset-life').value,
+                    method: row.querySelector('.asset-method').value
+                };
+                
+                const dep = calculateDepreciation(asset);
+                
+                if (category === 'Selling') {
+                    sellingDep += dep;
+                } else {
+                    adminDep += dep; // Includes 'Other' assets
+                }
+            });
+            
+            // Update input fields
+            document.getElementById('depSalesAssets').value = sellingDep.toFixed(2);
+            document.getElementById('depAdminAssets').value = adminDep.toFixed(2);
+            
+            return { selling: sellingDep, admin: adminDep };
+        }
+        
+        // Format currency with commas and 2 decimals
+        function formatCurrency(amount) {
+            if (typeof amount !== 'number') {
+                amount = parseFloat(amount) || 0;
+            }
+            
+            const formatter = new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            
+            if (amount < 0) {
+                return `(${formatter.format(Math.abs(amount))})`;
+            }
+            return formatter.format(amount);
+        }
+        
+        // Validate required fields
+        function validateForm() {
+            const requiredFields = [
+                'companyName', 'cinNumber', 'financialYear', 'headOffice', 
+                'city', 'state', 'country', 'zipCode', 'email', 'contactNumber',
+                'grossRevenue', 'beginningInventory', 'purchases', 'endingInventory',
+                'taxRate', 'weightedShares'
+            ];
+            
+            for (const field of requiredFields) {
+                const element = document.getElementById(field);
+                if (!element.value.trim()) {
+                    showError(`Please fill in the required field: ${element.previousElementSibling.textContent.replace(/\*/g, '').trim()}`);
+                    element.focus();
+                    return false;
+                }
+            }
+            
+            // Validate numeric fields
+            const numericFields = [
+                'grossRevenue', 'salesReturns', 'salesAllowances', 'salesDiscounts',
+                'beginningInventory', 'purchases', 'endingInventory',
+                'advertising', 'salesSalaries', 'commissions', 'freightOut',
+                'officeSalaries', 'rent', 'utilities', 'insurance',
+                'interestIncome', 'dividendIncome', 'gainOnSale', 'interestExpense',
+                'lossOnSale', 'impairmentCharges', 'restructuringCosts', 'taxRate',
+                'preferredDividends', 'weightedShares', 'dilutedShares'
+            ];
+            
+            for (const field of numericFields) {
+                const value = parseFloat(document.getElementById(field).value);
+                if (isNaN(value)) {
+                    showError(`Please enter a valid number for: ${document.getElementById(field).previousElementSibling.textContent.replace(/\*/g, '').trim()}`);
+                    document.getElementById(field).focus();
+                    return false;
+                }
+                // Special validation for tax rate (0-100)
+                if (field === 'taxRate' && (value < 0 || value > 100)) {
+                    showError("Tax rate must be between 0 and 100");
+                    document.getElementById(field).focus();
+                    return false;
+                }
+            }
+            
+            // Validate shares for EPS
+            const weightedShares = parseFloat(document.getElementById('weightedShares').value);
+            if (weightedShares <= 0) {
+                showError("Weighted average shares must be greater than zero");
+                document.getElementById('weightedShares').focus();
+                return false;
+            }
+            
+            // Validate assets
+            const assetRows = document.querySelectorAll('#assetTableBody tr');
+            if (assetRows.length === 0) {
+                showError("At least one asset is required");
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Show error message
+        function showError(message) {
+            errorMessageText.textContent = message;
+            errorMessage.style.display = 'flex';
+            successMessage.style.display = 'none';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Show success message
+        function showSuccess() {
+            successMessage.style.display = 'flex';
+            errorMessage.style.display = 'none';
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Update generation timestamp
+        function updateGenerationTimestamp() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            const formattedDate = now.toLocaleDateString('en-US', options);
+            
+            document.getElementById('generationDate').textContent = `Generated on: ${formattedDate}`;
+            document.getElementById('footerTimestamp').textContent = formattedDate;
+        }
+        
+        // Calculate income statement
+        function calculateIncomeStatement() {
+            // Hide previous messages
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+            
+            // Validate form
+            if (!validateForm()) return;
+            
+            // Calculate depreciation totals
+            calculateDepreciationTotals();
+            
+            // Get input values
+            const grossRevenue = parseFloat(document.getElementById('grossRevenue').value) || 0;
+            const salesReturns = parseFloat(document.getElementById('salesReturns').value) || 0;
+            const salesAllowances = parseFloat(document.getElementById('salesAllowances').value) || 0;
+            const salesDiscounts = parseFloat(document.getElementById('salesDiscounts').value) || 0;
+            
+            const beginningInventory = parseFloat(document.getElementById('beginningInventory').value) || 0;
+            const purchases = parseFloat(document.getElementById('purchases').value) || 0;
+            const endingInventory = parseFloat(document.getElementById('endingInventory').value) || 0;
+            
+            const advertising = parseFloat(document.getElementById('advertising').value) || 0;
+            const salesSalaries = parseFloat(document.getElementById('salesSalaries').value) || 0;
+            const commissions = parseFloat(document.getElementById('commissions').value) || 0;
+            const freightOut = parseFloat(document.getElementById('freightOut').value) || 0;
+            const depSalesAssets = parseFloat(document.getElementById('depSalesAssets').value) || 0;
+            
+            const officeSalaries = parseFloat(document.getElementById('officeSalaries').value) || 0;
+            const rent = parseFloat(document.getElementById('rent').value) || 0;
+            const utilities = parseFloat(document.getElementById('utilities').value) || 0;
+            const insurance = parseFloat(document.getElementById('insurance').value) || 0;
+            const depAdminAssets = parseFloat(document.getElementById('depAdminAssets').value) || 0;
+            
+            const interestIncome = parseFloat(document.getElementById('interestIncome').value) || 0;
+            const dividendIncome = parseFloat(document.getElementById('dividendIncome').value) || 0;
+            const gainOnSale = parseFloat(document.getElementById('gainOnSale').value) || 0;
+            const interestExpense = parseFloat(document.getElementById('interestExpense').value) || 0;
+            const lossOnSale = parseFloat(document.getElementById('lossOnSale').value) || 0;
+            const impairmentCharges = parseFloat(document.getElementById('impairmentCharges').value) || 0;
+            const restructuringCosts = parseFloat(document.getElementById('restructuringCosts').value) || 0;
+            const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+            
+            const preferredDividends = parseFloat(document.getElementById('preferredDividends').value) || 0;
+            const weightedShares = parseFloat(document.getElementById('weightedShares').value) || 1;
+            const dilutedShares = parseFloat(document.getElementById('dilutedShares').value) || 0;
+            
+            // Calculate Revenue
+            const netRevenue = grossRevenue - salesReturns - salesAllowances - salesDiscounts;
+            
+            // Calculate COGS
+            const cogs = beginningInventory + purchases - endingInventory;
+            
+            // Calculate Gross Profit
+            const grossProfit = netRevenue - cogs;
+            
+            // Calculate Operating Expenses
+            const totalSellingExpenses = advertising + salesSalaries + commissions + freightOut + depSalesAssets;
+            const totalGAndAExpenses = officeSalaries + rent + utilities + insurance + depAdminAssets;
+            const totalOperatingExpenses = totalSellingExpenses + totalGAndAExpenses;
+            
+            // Calculate Operating Income (EBIT)
+            const operatingIncome = grossProfit - totalOperatingExpenses;
+            
+            // Calculate Non-operating items
+            const totalOtherIncome = interestIncome + dividendIncome + gainOnSale;
+            const totalOtherExpenses = interestExpense + lossOnSale + impairmentCharges + restructuringCosts;
+            
+            // Calculate Income Before Tax
+            const incomeBeforeTax = operatingIncome + totalOtherIncome - totalOtherExpenses;
+            
+            // Calculate Income Tax Expense
+            let incomeTaxExpense = 0;
+            if (incomeBeforeTax > 0) {
+                incomeTaxExpense = incomeBeforeTax * (taxRate / 100);
+            }
+            // Handle negative income (tax benefit) - but for simplicity, we'll assume no tax benefit
+            // In practice, this would depend on tax regulations
+            
+            // Calculate Net Income
+            const netIncome = incomeBeforeTax - incomeTaxExpense;
+            
+            // Calculate EPS
+            const basicEPS = (netIncome - preferredDividends) / weightedShares;
+            const dilutedEPS = (netIncome - preferredDividends) / (weightedShares + dilutedShares);
+            
+            // Populate company header
+            document.getElementById('companyHeader').textContent = 
+                `${document.getElementById('companyName').value}, ${document.getElementById('headOffice').value}`;
+            document.getElementById('cinHeader').textContent = `CIN/DIN: ${document.getElementById('cinNumber').value}`;
+            document.getElementById('financialYearHeader').textContent = `Financial Year: ${document.getElementById('financialYear').value}`;
+            document.getElementById('contactHeader').textContent = 
+                `Email: ${document.getElementById('email').value} | Contact: ${document.getElementById('contactNumber').value}`;
+            
+            // Build income statement
+            const statementBody = document.getElementById('statementBody');
+            statementBody.innerHTML = '';
+            
+            // Helper function to add row
+            function addRow(description, amount, isBold = false, isSectionHeader = false, isTotal = false) {
+                const row = document.createElement('tr');
+                if (isSectionHeader) {
+                    row.className = 'section-header';
+                } else if (isTotal) {
+                    row.className = 'total-row';
+                } else if (isBold) {
+                    row.className = 'highlight';
+                }
+                
+                const amountFormatted = formatCurrency(amount);
+                row.innerHTML = `
+                    <td>${description}</td>
+                    <td class="${amount < 0 ? 'negative' : ''}">${amountFormatted}</td>
+                `;
+                statementBody.appendChild(row);
+            }
+            
+            // Revenue Section
+            addRow('REVENUE', 0, false, true);
+            addRow('Gross Revenue / Sales', grossRevenue);
+            addRow('Less: Sales Returns', -salesReturns);
+            addRow('Less: Sales Allowances', -salesAllowances);
+            addRow('Less: Sales Discounts', -salesDiscounts);
+            addRow('Net Revenue', netRevenue, true);
+            
+            // COGS Section
+            addRow('COST OF GOODS SOLD', 0, false, true);
+            addRow('Beginning Inventory', beginningInventory);
+            addRow('Add: Purchases', purchases);
+            addRow('Less: Ending Inventory', -endingInventory);
+            addRow('Cost of Goods Sold', cogs, true);
+            
+            // Gross Profit
+            addRow('Gross Profit', grossProfit, true, false, true);
+            
+            // Operating Expenses
+            addRow('OPERATING EXPENSES', 0, false, true);
+            addRow('Selling Expenses:', 0, true);
+            addRow('  Advertising', advertising);
+            addRow('  Sales Salaries', salesSalaries);
+            addRow('  Commissions', commissions);
+            addRow('  Freight-out', freightOut);
+            addRow('  Depreciation (Sales Assets)', depSalesAssets);
+            addRow('Total Selling Expenses', totalSellingExpenses, true);
+            
+            addRow('General & Administrative Expenses:', 0, true);
+            addRow('  Office Salaries', officeSalaries);
+            addRow('  Rent', rent);
+            addRow('  Utilities', utilities);
+            addRow('  Insurance', insurance);
+            addRow('  Depreciation (Administrative Assets)', depAdminAssets);
+            addRow('Total G&A Expenses', totalGAndAExpenses, true);
+            
+            addRow('Total Operating Expenses', totalOperatingExpenses, true);
+            
+            // Operating Income
+            addRow('Operating Income (EBIT)', operatingIncome, true, false, true);
+            
+            // Non-Operating Items
+            addRow('OTHER INCOME', 0, false, true);
+            if (interestIncome > 0) addRow('Interest Income', interestIncome);
+            if (dividendIncome > 0) addRow('Dividend Income', dividendIncome);
+            if (gainOnSale > 0) addRow('Gain on Sale of Assets', gainOnSale);
+            addRow('Total Other Income', totalOtherIncome, true);
+            
+            addRow('OTHER EXPENSES', 0, false, true);
+            if (interestExpense > 0) addRow('Interest Expense', -interestExpense);
+            if (lossOnSale > 0) addRow('Loss on Sale of Assets', -lossOnSale);
+            if (impairmentCharges > 0) addRow('Impairment Charges', -impairmentCharges);
+            if (restructuringCosts > 0) addRow('Restructuring Costs', -restructuringCosts);
+            addRow('Total Other Expenses', -totalOtherExpenses, true);
+            
+            // Income Before Tax
+            addRow('Income Before Tax', incomeBeforeTax, true, false, true);
+            
+            // Income Tax Expense
+            addRow('Income Tax Expense', -incomeTaxExpense, true);
+            
+            // Net Income
+            addRow('NET INCOME', netIncome, true, false, true);
+            
+            // EPS Section
+            addRow('EARNINGS PER SHARE', 0, false, true);
+            addRow('Basic EPS', basicEPS);
+            if (dilutedShares > 0) {
+                addRow('Diluted EPS', dilutedEPS);
+            }
+            
+            // Update generation timestamp
+            updateGenerationTimestamp();
+            
+            // Show success message and scroll to statement
+            showSuccess();
+            statementContainer.classList.add('visible');
+            
+            // Scroll to statement with smooth behavior
+            statementContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        // Reset form
+        function resetForm() {
+            if (confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
+                // Reset company info
+                document.getElementById('companyName').value = '';
+                document.getElementById('cinNumber').value = '';
+                document.getElementById('financialYear').value = '';
+                document.getElementById('headOffice').value = '';
+                document.getElementById('city').value = '';
+                document.getElementById('state').value = '';
+                document.getElementById('country').value = '';
+                document.getElementById('zipCode').value = '';
+                document.getElementById('email').value = '';
+                document.getElementById('contactNumber').value = '';
+                
+                // Reset revenue
+                document.getElementById('grossRevenue').value = '';
+                document.getElementById('salesReturns').value = '0';
+                document.getElementById('salesAllowances').value = '0';
+                document.getElementById('salesDiscounts').value = '0';
+                
+                // Reset COGS
+                document.getElementById('beginningInventory').value = '';
+                document.getElementById('purchases').value = '';
+                document.getElementById('endingInventory').value = '';
+                
+                // Reset operating expenses
+                document.getElementById('advertising').value = '0';
+                document.getElementById('salesSalaries').value = '0';
+                document.getElementById('commissions').value = '0';
+                document.getElementById('freightOut').value = '0';
+                document.getElementById('depSalesAssets').value = '0.00';
+                document.getElementById('officeSalaries').value = '0';
+                document.getElementById('rent').value = '0';
+                document.getElementById('utilities').value = '0';
+                document.getElementById('insurance').value = '0';
+                document.getElementById('depAdminAssets').value = '0.00';
+                
+                // Reset non-operating
+                document.getElementById('interestIncome').value = '0';
+                document.getElementById('dividendIncome').value = '0';
+                document.getElementById('gainOnSale').value = '0';
+                document.getElementById('interestExpense').value = '0';
+                document.getElementById('lossOnSale').value = '0';
+                document.getElementById('impairmentCharges').value = '0';
+                document.getElementById('restructuringCosts').value = '0';
+                document.getElementById('taxRate').value = '30';
+                
+                // Reset EPS
+                document.getElementById('preferredDividends').value = '0';
+                document.getElementById('weightedShares').value = '1000000';
+                document.getElementById('dilutedShares').value = '0';
+                
+                // Reset asset table (keep 1 row)
+                assetTableBody.innerHTML = '';
+                addAssetRow('Administrative', 'Office Building', new Date().toISOString().split('T')[0], 500000, 50000, 20, 'Straight-Line');
+                
+                // Clear statement
+                document.getElementById('statementBody').innerHTML = '';
+                document.getElementById('companyHeader').textContent = '';
+                document.getElementById('cinHeader').textContent = '';
+                document.getElementById('financialYearHeader').textContent = '';
+                document.getElementById('contactHeader').textContent = '';
+                document.getElementById('generationDate').textContent = '';
+                
+                // Hide messages
+                successMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+                
+                // Hide statement container
+                statementContainer.classList.remove('visible');
+            }
+        }
+        
+        // Download asset register as CSV
+        function downloadAssetCSV() {
+            const assetRows = document.querySelectorAll('#assetTableBody tr');
+            let csvContent = "Category,Asset Name,Purchase Date,Cost,Salvage Value,Useful Life,Depreciation Method\n";
+            
+            assetRows.forEach(row => {
+                const category = row.querySelector('.asset-category').value;
+                const name = row.querySelector('.asset-name').value.replace(/,/g, ''); // Remove commas
+                const date = row.querySelector('.asset-date').value;
+                const cost = row.querySelector('.asset-cost').value;
+                const salvage = row.querySelector('.asset-salvage').value;
+                const life = row.querySelector('.asset-life').value;
+                const method = row.querySelector('.asset-method').value;
+                
+                csvContent += `"${category}","${name}","${date}","${cost}","${salvage}","${life}","${method}"\n`;
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'asset_register.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Download PDF
+        function downloadPDF() {
+            // First calculate to ensure data is up to date
+            if (!validateForm()) {
+                showError("Please complete all required fields before exporting to PDF");
+                return;
+            }
+            
+            calculateIncomeStatement();
+            
+            // Use html2pdf library
+            const { jsPDF } = window.jspdf;
+            
+            // Create a temporary container for PDF content
+            const pdfContainer = document.createElement('div');
+            pdfContainer.id = 'pdf-container';
+            pdfContainer.style.width = '100%';
+            pdfContainer.style.padding = '30px';
+            pdfContainer.style.fontFamily = 'Arial, sans-serif';
+            pdfContainer.style.fontSize = '14px';
+            pdfContainer.style.backgroundColor = 'white';
+            
+            // Clone header
+            const headerClone = document.querySelector('.statement-header').cloneNode(true);
+            pdfContainer.appendChild(headerClone);
+            
+            // Clone income statement table
+            const tableClone = document.querySelector('.income-statement').cloneNode(true);
+            pdfContainer.appendChild(tableClone);
+            
+            // Add footer
+            const footer = document.createElement('div');
+            footer.style.marginTop = '40px';
+            footer.style.padding = '25px';
+            footer.style.backgroundColor = '#0f172a';
+            footer.style.color = 'white';
+            footer.style.textAlign = 'center';
+            footer.style.borderRadius = '10px';
+            footer.innerHTML = `
+                <p style="font-size: 14px; margin: 8px 0;">Copyright reserved. Created by Samar Jeet Jamwal. All information is private and secure — generated on the client side.</p>
+                <p style="font-size: 12px; opacity: 0.8; margin: 8px 0;">Page 1 of 1 | Generated on: ${document.getElementById('footerTimestamp').textContent}</p>
+            `;
+            pdfContainer.appendChild(footer);
+            
+            // Add to body temporarily
+            document.body.appendChild(pdfContainer);
+            
+            // Generate PDF
+            html2canvas(pdfContainer, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: null
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 210; // A4 width in mm
+                const pageHeight = 295; // A4 height in mm
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+                
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                pdf.save('Income_Statement.pdf');
+                
+                // Remove temporary container
+                document.body.removeChild(pdfContainer);
+            }).catch(error => {
+                console.error('PDF generation error:', error);
+                showError('Error generating PDF. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>
